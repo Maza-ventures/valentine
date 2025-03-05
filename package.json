@@ -1,0 +1,74 @@
+{
+  "name": "@valentine/core",
+  "version": "0.1.0",
+  "description": "Toolkit for Venture Capital firms to run their back office efficiently and openly",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "prepare": "npm run build",
+    "docs": "typedoc --entryPoints src/index.ts --out docs",
+    "docs:watch": "typedoc --entryPoints src/index.ts --out docs --watch"
+  },
+  "keywords": [
+    "venture-capital",
+    "portfolio-management",
+    "nav",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.13.9",
+    "@typescript-eslint/eslint-plugin": "^8.26.0",
+    "@typescript-eslint/parser": "^8.26.0",
+    "eslint": "^9.21.0",
+    "jest": "^29.7.0",
+    "prettier": "^3.5.3",
+    "ts-jest": "^29.2.6",
+    "typedoc": "^0.27.9",
+    "typedoc-plugin-markdown": "^4.4.2",
+    "typescript": "^5.8.2"
+  },
+  "dependencies": {
+    "date-fns": "^4.1.0",
+    "decimal.js": "^10.5.0",
+    "zod": "^3.24.2"
+  },
+  "typedoc": {
+    "entryPoints": ["src/index.ts"],
+    "out": "docs",
+    "name": "Valentine Documentation",
+    "includeVersion": true,
+    "categorizeByGroup": true,
+    "categoryOrder": ["Portfolio", "NAV", "Updates", "*"],
+    "readme": "README.md",
+    "plugin": ["typedoc-plugin-markdown"]
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "roots": ["<rootDir>/src"],
+    "testMatch": ["**/__tests__/**/*.test.ts"],
+    "collectCoverageFrom": [
+      "src/**/*.ts",
+      "!src/**/*.d.ts",
+      "!src/**/__tests__/**"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 80,
+        "functions": 80,
+        "lines": 80,
+        "statements": 80
+      }
+    },
+    "setupFilesAfterEnv": ["<rootDir>/src/setupTests.ts"]
+  }
+}
