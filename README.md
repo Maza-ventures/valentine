@@ -1,2 +1,2 @@
 # valentine
-Tooking for Venture Capital firms to run their backoffice efficiently and openly
+Toolkit for Venture Capital firms to run their back office efficiently and openly
