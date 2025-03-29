@@ -101,7 +101,7 @@ export async function GET(req: NextRequest) {
               },
             }
           : null,
-        upcomingTasks: company.tasks.map((task) => ({
+        upcomingTasks: company.tasks.map((task: any) => ({
           id: task.id,
           description: task.description,
           dueDate: task.dueDate,

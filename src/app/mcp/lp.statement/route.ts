@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
-import { UserRole } from "@prisma/client";
+import { UserRole } from "@/lib/types";
 
 export async function GET(req: NextRequest) {
   try {
@@ -63,7 +63,7 @@ export async function GET(req: NextRequest) {
 
     // Calculate statement data
     const commitment = lp.commitment;
-    const capitalCalls = lp.responses.map((response) => ({
+    const capitalCalls = lp.responses.map((response: any) => ({
       id: response.capitalCall.id,
       date: response.capitalCall.date,
       dueDate: response.capitalCall.dueDate,
@@ -77,11 +77,11 @@ export async function GET(req: NextRequest) {
 
     // Calculate totals
     const totalCalled = capitalCalls.reduce(
-      (sum, call) => sum + call.amount,
+      (sum: number, call: any) => sum + call.amount,
       0
     );
     const totalPaid = capitalCalls.reduce(
-      (sum, call) => sum + call.amountPaid,
+      (sum: number, call: any) => sum + call.amountPaid,
       0
     );
     const outstandingBalance = commitment - totalPaid;

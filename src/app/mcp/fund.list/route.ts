@@ -117,7 +117,7 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json({
-      funds: funds.map((fund) => ({
+      funds: funds.map((fund: any) => ({
         id: fund.id,
         name: fund.name,
         description: fund.description,

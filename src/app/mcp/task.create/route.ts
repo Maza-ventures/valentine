@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
-import { UserRole } from "@prisma/client";
+import { UserRole, TaskStatus, TaskPriority } from "@/lib/types";
 import { z } from "zod";
 
 // Define validation schema
