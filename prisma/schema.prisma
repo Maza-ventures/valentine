@@ -1,0 +1,269 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model with role-based authorization
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  role          UserRole  @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  accounts      Account[]
+  sessions      Session[]
+  funds         Fund[]
+  tasks         Task[]    @relation("AssignedTasks")
+  createdTasks  Task[]    @relation("CreatedTasks")
+
+  @@map("users")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  FUND_MANAGER
+  ANALYST
+  READ_ONLY
+  USER
+}
+
+// NextAuth models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// Fund model
+model Fund {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  target      Float?
+  vintage     Int?
+  status      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  ownerId     String
+
+  // Relations
+  owner             User                @relation(fields: [ownerId], references: [id])
+  investments       Investment[]
+  limitedPartners   LimitedPartner[]
+  capitalCalls      CapitalCall[]
+  
+  @@map("funds")
+}
+
+// Portfolio Company model
+model PortfolioCompany {
+  id          String   @id @default(cuid())
+  name        String
+  sector      String?
+  website     String?
+  description String?
+  founded     Int?
+  location    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  investments Investment[]
+  checkIns    CheckIn[]
+  tasks       Task[]
+
+  @@map("portfolio_companies")
+}
+
+// Investment model
+model Investment {
+  id          String   @id @default(cuid())
+  amount      Float
+  date        DateTime
+  round       String?
+  valuation   Float?
+  ownership   Float?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  fundId      String
+  companyId   String
+
+  // Relations
+  fund        Fund             @relation(fields: [fundId], references: [id])
+  company     PortfolioCompany @relation(fields: [companyId], references: [id])
+
+  @@map("investments")
+}
+
+// Check-in model
+model CheckIn {
+  id          String   @id @default(cuid())
+  date        DateTime
+  notes       String?
+  revenue     Float?
+  burn        Float?
+  runway      Int?     // Runway in months
+  headcount   Int?
+  metrics     Json?    // Flexible JSON field for custom metrics
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  companyId   String
+
+  // Relations
+  company     PortfolioCompany @relation(fields: [companyId], references: [id])
+
+  @@map("check_ins")
+}
+
+// Task model
+model Task {
+  id          String    @id @default(cuid())
+  description String
+  dueDate     DateTime?
+  status      TaskStatus @default(TODO)
+  priority    TaskPriority @default(MEDIUM)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  companyId   String?
+  assignedToId String?
+  createdById String
+
+  // Relations
+  company     PortfolioCompany? @relation(fields: [companyId], references: [id])
+  assignedTo  User?            @relation("AssignedTasks", fields: [assignedToId], references: [id])
+  createdBy   User             @relation("CreatedTasks", fields: [createdById], references: [id])
+
+  @@map("tasks")
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+  CANCELED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+// Limited Partner model
+model LimitedPartner {
+  id          String   @id @default(cuid())
+  name        String
+  email       String?
+  phone       String?
+  type        String?  // Individual, Institution, etc.
+  commitment  Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  fundId      String
+
+  // Relations
+  fund        Fund                 @relation(fields: [fundId], references: [id])
+  responses   CapitalCallResponse[]
+
+  @@map("limited_partners")
+}
+
+// Capital Call model
+model CapitalCall {
+  id          String   @id @default(cuid())
+  date        DateTime
+  dueDate     DateTime
+  amount      Float
+  percentage  Float    // Percentage of total commitment
+  description String?
+  status      CapitalCallStatus @default(PENDING)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  fundId      String
+
+  // Relations
+  fund        Fund                 @relation(fields: [fundId], references: [id])
+  responses   CapitalCallResponse[]
+
+  @@map("capital_calls")
+}
+
+enum CapitalCallStatus {
+  PENDING
+  PARTIALLY_PAID
+  FULLY_PAID
+  OVERDUE
+}
+
+// Capital Call Response model
+model CapitalCallResponse {
+  id            String   @id @default(cuid())
+  amountPaid    Float
+  datePaid      DateTime?
+  status        PaymentStatus @default(PENDING)
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  lpId          String
+  capitalCallId String
+
+  // Relations
+  limitedPartner LimitedPartner @relation(fields: [lpId], references: [id])
+  capitalCall    CapitalCall    @relation(fields: [capitalCallId], references: [id])
+
+  @@map("capital_call_responses")
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  PARTIALLY_PAID
+  LATE
+}
