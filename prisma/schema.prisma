@@ -2,7 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "darwin"]
 }
 
 datasource db {
@@ -22,11 +23,11 @@ model User {
   updatedAt     DateTime  @updatedAt
 
   // Relations
-  accounts      Account[]
-  sessions      Session[]
-  funds         Fund[]
-  tasks         Task[]    @relation("AssignedTasks")
-  createdTasks  Task[]    @relation("CreatedTasks")
+  accounts     Account[]
+  sessions     Session[]
+  funds        Fund[]
+  tasks        Task[]    @relation("AssignedTasks")
+  createdTasks Task[]    @relation("CreatedTasks")
 
   @@map("users")
 }
@@ -84,7 +85,7 @@ model Fund {
   id          String   @id @default(cuid())
   name        String
   description String?
-  target      Float?
+  fundSize    Float?
   vintage     Int?
   status      String?
   createdAt   DateTime @default(now())
@@ -92,11 +93,12 @@ model Fund {
   ownerId     String
 
   // Relations
-  owner             User                @relation(fields: [ownerId], references: [id])
-  investments       Investment[]
-  limitedPartners   LimitedPartner[]
-  capitalCalls      CapitalCall[]
-  
+  owner              User               @relation(fields: [ownerId], references: [id])
+  investments        Investment[]
+  limitedPartners    LimitedPartner[]
+  capitalCalls       CapitalCall[]
+  portfolioCompanies PortfolioCompany[]
+
   @@map("funds")
 }
 
@@ -116,68 +118,70 @@ model PortfolioCompany {
   investments Investment[]
   checkIns    CheckIn[]
   tasks       Task[]
+  Fund        Fund?        @relation(fields: [fundId], references: [id])
+  fundId      String?
 
   @@map("portfolio_companies")
 }
 
 // Investment model
 model Investment {
-  id          String   @id @default(cuid())
-  amount      Float
-  date        DateTime
-  round       String?
-  valuation   Float?
-  ownership   Float?
-  notes       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  fundId      String
-  companyId   String
+  id        String   @id @default(cuid())
+  amount    Float
+  date      DateTime
+  round     String?
+  valuation Float?
+  ownership Float?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  fundId    String
+  companyId String
 
   // Relations
-  fund        Fund             @relation(fields: [fundId], references: [id])
-  company     PortfolioCompany @relation(fields: [companyId], references: [id])
+  fund    Fund             @relation(fields: [fundId], references: [id])
+  company PortfolioCompany @relation(fields: [companyId], references: [id])
 
   @@map("investments")
 }
 
 // Check-in model
 model CheckIn {
-  id          String   @id @default(cuid())
-  date        DateTime
-  notes       String?
-  revenue     Float?
-  burn        Float?
-  runway      Int?     // Runway in months
-  headcount   Int?
-  metrics     Json?    // Flexible JSON field for custom metrics
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  companyId   String
+  id        String   @id @default(cuid())
+  date      DateTime
+  notes     String?
+  revenue   Float?
+  burn      Float?
+  runway    Int? // Runway in months
+  headcount Int?
+  metrics   Json? // Flexible JSON field for custom metrics
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  companyId String
 
   // Relations
-  company     PortfolioCompany @relation(fields: [companyId], references: [id])
+  company PortfolioCompany @relation(fields: [companyId], references: [id])
 
   @@map("check_ins")
 }
 
 // Task model
 model Task {
-  id          String    @id @default(cuid())
-  description String
-  dueDate     DateTime?
-  status      TaskStatus @default(TODO)
-  priority    TaskPriority @default(MEDIUM)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  companyId   String?
+  id           String       @id @default(cuid())
+  description  String
+  dueDate      DateTime?
+  status       TaskStatus   @default(TODO)
+  priority     TaskPriority @default(MEDIUM)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  companyId    String?
   assignedToId String?
-  createdById String
+  createdById  String
 
   // Relations
-  company     PortfolioCompany? @relation(fields: [companyId], references: [id])
-  assignedTo  User?            @relation("AssignedTasks", fields: [assignedToId], references: [id])
-  createdBy   User             @relation("CreatedTasks", fields: [createdById], references: [id])
+  company    PortfolioCompany? @relation(fields: [companyId], references: [id])
+  assignedTo User?             @relation("AssignedTasks", fields: [assignedToId], references: [id])
+  createdBy  User              @relation("CreatedTasks", fields: [createdById], references: [id])
 
   @@map("tasks")
 }
@@ -198,39 +202,39 @@ enum TaskPriority {
 
 // Limited Partner model
 model LimitedPartner {
-  id          String   @id @default(cuid())
-  name        String
-  email       String?
-  phone       String?
-  type        String?  // Individual, Institution, etc.
-  commitment  Float
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  fundId      String
+  id         String   @id @default(cuid())
+  name       String
+  email      String?
+  phone      String?
+  type       String? // Individual, Institution, etc.
+  commitment Float
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  fundId     String
 
   // Relations
-  fund        Fund                 @relation(fields: [fundId], references: [id])
-  responses   CapitalCallResponse[]
+  fund      Fund                  @relation(fields: [fundId], references: [id])
+  responses CapitalCallResponse[]
 
   @@map("limited_partners")
 }
 
 // Capital Call model
 model CapitalCall {
-  id          String   @id @default(cuid())
+  id          String            @id @default(cuid())
   date        DateTime
   dueDate     DateTime
   amount      Float
-  percentage  Float    // Percentage of total commitment
+  percentage  Float // Percentage of total commitment
   description String?
   status      CapitalCallStatus @default(PENDING)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
   fundId      String
 
   // Relations
-  fund        Fund                 @relation(fields: [fundId], references: [id])
-  responses   CapitalCallResponse[]
+  fund      Fund                  @relation(fields: [fundId], references: [id])
+  responses CapitalCallResponse[]
 
   @@map("capital_calls")
 }
@@ -244,13 +248,13 @@ enum CapitalCallStatus {
 
 // Capital Call Response model
 model CapitalCallResponse {
-  id            String   @id @default(cuid())
+  id            String        @id @default(cuid())
   amountPaid    Float
   datePaid      DateTime?
   status        PaymentStatus @default(PENDING)
   notes         String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
   lpId          String
   capitalCallId String
 

@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
+import { useAuth } from "@/components/auth-provider";
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { Button } from "@/components/ui/button";
 import { 
@@ -15,9 +15,11 @@ import {
   AlertCircle
 } from "lucide-react";
 import Link from "next/link";
+import { Loading } from "@/components/ui/loading";
 
 export default function DashboardPage() {
-  const { data: session, status } = useSession();
+  const { session, loading } = useAuth();
+  const router = useRouter();
   const [stats, setStats] = useState({
     funds: 0,
     companies: 0,
@@ -27,9 +29,11 @@ export default function DashboardPage() {
   });
 
   // Redirect if not authenticated
-  if (status === "unauthenticated") {
-    redirect("/login");
-  }
+  useEffect(() => {
+    if (!loading && !session) {
+      router.push("/login");
+    }
+  }, [loading, session, router]);
 
   // Fetch dashboard stats
   useEffect(() => {
@@ -49,8 +53,8 @@ export default function DashboardPage() {
   }, []);
 
   // Loading state
-  if (status === "loading") {
-    return <div>Loading...</div>;
+  if (loading) {
+    return <Loading size="lg" text="Loading..." className="h-[calc(100vh-4rem)]" />;
   }
 
   if (!session?.user) {

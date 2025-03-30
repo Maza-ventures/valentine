@@ -14,8 +14,6 @@
     "cli": "ts-node -r tsconfig-paths/register cli/index.ts"
   },
   "dependencies": {
-    "@auth/core": "^0.18.1",
-    "@auth/prisma-adapter": "^1.0.11",
     "@hookform/resolvers": "^3.3.2",
     "@prisma/client": "^5.6.0",
     "@radix-ui/react-avatar": "^1.0.4",
@@ -29,6 +27,7 @@
     "@radix-ui/react-slot": "^1.0.2",
     "@radix-ui/react-tabs": "^1.0.4",
     "@radix-ui/react-toast": "^1.1.5",
+    "@types/next-auth": "^3.15.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "cmdk": "^0.2.0",
@@ -36,10 +35,9 @@
     "date-fns": "^2.30.0",
     "lucide-react": "^0.294.0",
     "next": "14.0.3",
-    "next-auth": "^5.0.0-beta.4",
     "next-themes": "^0.2.1",
-    "react": "^18",
-    "react-dom": "^18",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "react-hook-form": "^7.48.2",
     "tailwind-merge": "^2.1.0",
     "tailwindcss-animate": "^1.0.7",
@@ -60,6 +58,6 @@
     "typescript": "^5"
   },
   "prisma": {
-    "seed": "ts-node -r tsconfig-paths/register prisma/seed.ts"
+    "seed": "node prisma/seed.js"
   }
 }

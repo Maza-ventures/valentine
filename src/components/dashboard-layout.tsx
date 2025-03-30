@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut } from "@/auth";
+import { useRouter } from "next/navigation";
 import { 
   LayoutDashboard, 
   Briefcase, 
@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { UserRole } from "@prisma/client";
+import { UserRole } from "@/lib/types";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 interface DashboardLayoutProps {
@@ -141,7 +141,10 @@ export function DashboardLayout({ children, user }: DashboardLayoutProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => signOut()}
+                  onClick={async () => {
+                    await fetch('/api/auth/logout', { method: 'POST' });
+                    window.location.href = '/login';
+                  }}
                   title="Sign out"
                 >
                   <LogOut className="h-5 w-5 text-muted-foreground" />

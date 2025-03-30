@@ -1,10 +1,12 @@
-import { PrismaClient, UserRole } from '@prisma/client';
+const { PrismaClient } = require('@prisma/client');
+const { UserRole } = require('../src/lib/types');
 
-const prisma = new PrismaClient();
+// Initialize PrismaClient with a different variable name
+const db = new PrismaClient();
 
 async function main() {
   // Create a super admin user
-  const superAdmin = await prisma.user.upsert({
+  const superAdmin = await db.user.upsert({
     where: { email: 'admin@valentine.vc' },
     update: {},
     create: {
@@ -15,7 +17,7 @@ async function main() {
   });
 
   // Create a fund manager
-  const fundManager = await prisma.user.upsert({
+  const fundManager = await db.user.upsert({
     where: { email: 'manager@valentine.vc' },
     update: {},
     create: {
@@ -26,7 +28,7 @@ async function main() {
   });
 
   // Create an analyst
-  const analyst = await prisma.user.upsert({
+  const analyst = await db.user.upsert({
     where: { email: 'analyst@valentine.vc' },
     update: {},
     create: {
@@ -37,7 +39,7 @@ async function main() {
   });
 
   // Create a read-only user
-  const readOnly = await prisma.user.upsert({
+  const readOnly = await db.user.upsert({
     where: { email: 'readonly@valentine.vc' },
     update: {},
     create: {
@@ -48,7 +50,7 @@ async function main() {
   });
 
   // Create a fund
-  const seedFund = await prisma.fund.upsert({
+  const seedFund = await db.fund.upsert({
     where: { id: 'seed-fund-1' },
     update: {},
     create: {
@@ -58,12 +60,12 @@ async function main() {
       target: 50000000, // $50M
       vintage: 2025,
       status: 'Active',
-      ownerId: fundManager.id,
+      ownerId: superAdmin.id,
     },
   });
 
   // Create another fund
-  const growthFund = await prisma.fund.upsert({
+  const growthFund = await db.fund.upsert({
     where: { id: 'growth-fund-1' },
     update: {},
     create: {
@@ -78,7 +80,7 @@ async function main() {
   });
 
   // Create portfolio companies
-  const acme = await prisma.portfolioCompany.upsert({
+  const acme = await db.portfolioCompany.upsert({
     where: { id: 'acme-inc' },
     update: {},
     create: {
@@ -92,7 +94,7 @@ async function main() {
     },
   });
 
-  const techCorp = await prisma.portfolioCompany.upsert({
+  const techCorp = await db.portfolioCompany.upsert({
     where: { id: 'tech-corp' },
     update: {},
     create: {
@@ -256,5 +258,5 @@ main()
     process.exit(1);
   })
   .finally(async () => {
-    await prisma.$disconnect();
+    await db.$disconnect();
   });

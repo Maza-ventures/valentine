@@ -67,7 +67,7 @@ Valentine runs as:
    ```
 
 5. Start the development server:
-   ```bash
+   ```bashI got
    npm run dev
    ```
 
@@ -101,40 +101,6 @@ Valentine exposes structured JSON endpoints under the `/mcp/` path for use with 
 - `POST /mcp/task.create` - Create a new task
 
 All MCP endpoints require authentication and respect role-based access controls.
-
-## Deployment
-
-### Deploying to Fly.io
-
-1. Install the Fly CLI:
-   ```bash
-   curl -L https://fly.io/install.sh | sh
-   ```
-
-2. Log in to Fly:
-   ```bash
-   fly auth login
-   ```
-
-3. Launch the app:
-   ```bash
-   fly launch
-   ```
-
-4. Add a PostgreSQL database:
-   ```bash
-   fly postgres create
-   ```
-
-5. Connect the database:
-   ```bash
-   fly postgres attach --app valentine <postgres-app-name>
-   ```
-
-6. Deploy the app:
-   ```bash
-   fly deploy
-   ```
 
 ## Security
 
